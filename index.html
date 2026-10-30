@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sag Calc">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Free wire sag and helicopter load calculator for wire pulls. Works offline. From Rubicon Aerospace.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Wire Sag Calculator | Rubicon Aerospace</title>
+<style>
+  :root { --y:#FFC20E; --bk:#000; --bg:#14171a; --card:#0b0c0d; --mut:#9aa3ab; --warn:#ff8a3d; --red:#d62828; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
+  h1 { margin:0; background:var(--bk); color:var(--y); font:900 34px/1.1 "Arial Black",Arial,sans-serif; text-align:center; padding:14px 8px; letter-spacing:.5px; }
+  .sub { text-align:center; color:var(--mut); margin:8px 0 14px; font-size:14px; }
+  .glbl { color:var(--mut); font-size:12px; letter-spacing:.6px; font-weight:700; margin:0 0 6px 2px; }
+  .seg { display:grid; grid-template-columns:1fr 1fr; margin-bottom:14px; border:2px solid var(--y); gap:2px; background:var(--y); }
+  .seg button { background:var(--bk); color:var(--y); border:0; padding:12px 4px; font-size:16px; font-weight:800; }
+  .seg button.on { background:var(--y); color:#000; }
+  .field { display:block; margin-bottom:14px; }
+  .lbl { display:block; background:var(--bk); color:var(--y); font-weight:800; font-size:20px; text-align:center; padding:10px; }
+  .hint { display:block; color:var(--mut); font-size:12.5px; line-height:1.35; margin-top:5px; text-align:center; }
+  input, select { width:100%; font-size:30px; text-align:center; padding:12px; border:3px solid #1c2b6b; border-top:0; background:#fff; color:#000; border-radius:0; -webkit-appearance:none; appearance:none; font-family:inherit; }
+  select { font-size:18px; font-weight:700; text-align-last:center; padding:12px 8px; }
+  input:focus, select:focus { outline:none; border-color:var(--y); }
+  input[readonly] { background:#e9ecef; }
+  details { background:var(--card); border:1px solid #2a2f35; margin:6px 0 16px; }
+  summary { cursor:pointer; padding:14px; font-weight:700; color:var(--y); font-size:17px; list-style:none; }
+  summary::-webkit-details-marker { display:none; }
+  summary::before { content:"+ "; }
+  details[open] summary::before { content:"− "; }
+  .hwrap { padding:0 14px 14px; }
+  .box { background:var(--card); border:1px solid #2a2f35; padding:14px; margin:6px 0 16px; }
+  .box h2 { margin:0 0 12px; color:var(--y); font-size:17px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .row2 .lbl, .box .lbl { font-size:15px; padding:8px 4px; }
+  .row2 input, .box input { font-size:24px; padding:10px 6px; }
+  .box select { font-size:16px; }
+  .note { color:var(--mut); font-size:13px; line-height:1.4; margin:10px 0 0; }
+  .mhead { display:grid; grid-template-columns:1.1fr 1fr; gap:8px; color:var(--mut); font-size:12px; padding:0 2px 6px; }
+  .srow, .prow { display:grid; grid-template-columns:1.1fr 1fr; gap:8px; align-items:stretch; }
+  .srow .tag { background:var(--bk); color:var(--y); font-weight:800; font-size:16px; display:flex; align-items:center; padding:0 12px; }
+  .srow.heli .tag { background:var(--y); color:#000; }
+  .srow input, .prow input { font-size:22px; padding:10px 6px; border-top:3px solid #1c2b6b; }
+  .prow { margin:6px 0 6px 18px; grid-template-columns:1fr 1fr; }
+  .prow .tag { color:var(--mut); font-size:14px; display:flex; align-items:center; border-left:3px solid var(--y); padding-left:10px; }
+  .prow input { background:#e9ecef; font-size:20px; }
+  .mbtns { display:grid; grid-template-columns:2fr 1fr; gap:8px; margin:12px 0 16px; }
+  .mbtns button { background:var(--bk); color:var(--y); border:2px solid var(--y); padding:12px; font-size:17px; font-weight:800; }
+  .mbtns button.sec { color:var(--mut); border-color:#3a4148; font-weight:600; font-size:15px; }
+  .result { background:var(--y); color:#000; text-align:center; padding:14px 10px 16px; margin-top:4px; }
+  .result .k { font-weight:800; font-size:20px; letter-spacing:.5px; }
+  .result .v { font:900 56px/1.05 "Arial Black",Arial,sans-serif; }
+  .result .u { font-size:24px; font-weight:800; }
+  .result .s { font-size:13px; margin-top:4px; }
+  .result.heli { background:#fff; margin-top:10px; }
+  .result.heli .v { font-size:46px; }
+  .result.near { background:var(--warn); }
+  .result.over { background:var(--red); color:#fff; }
+  svg { display:block; width:100%; height:auto; background:var(--card); margin-top:12px; }
+  .stats { background:var(--card); margin:12px 0 0; padding:6px 14px; }
+  .stats div { display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid #22272c; font-size:15px; }
+  .stats div:last-child { border-bottom:0; }
+  .stats div.h { color:var(--y); font-weight:800; font-size:13px; letter-spacing:.5px; padding-top:14px; }
+  .stats dt { color:var(--mut); }
+  .stats dd { margin:0; font-weight:700; text-align:right; }
+  .warn { background:#2a1606; border-left:4px solid var(--warn); color:#ffd7bd; padding:10px 12px; font-size:14px; line-height:1.4; margin-top:12px; }
+  .hide { display:none !important; }
+  .formula { color:var(--mut); font-size:13px; text-align:center; margin:14px 0 0; }
+  .disc { color:#7d868e; font-size:12px; line-height:1.5; margin-top:22px; border-top:1px solid #22272c; padding-top:14px; }
+  .brand { text-align:center; margin-top:14px; font-size:13px; color:var(--mut); }
+  .brand a { color:var(--y); text-decoration:none; font-weight:700; }
+  button.clear { display:block; margin:16px auto 0; background:none; border:1px solid #3a4148; color:var(--mut); padding:8px 18px; font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>SAG CALCULATOR</h1>
+  <p class="sub">Wire sag and helicopter load for wire pulls</p>
+
+  <div class="glbl">PULL METHOD</div>
+  <div class="seg" id="methods">
+    <button type="button" data-m="side" class="on">Side pull</button>
+    <button type="button" data-m="long">Long line + weight</button>
+    <button type="button" data-m="hs">Helistringer</button>
+    <button type="button" data-m="sag">Sag only</button>
+  </div>
+
+  <div class="glbl">PULL LAYOUT</div>
+  <div class="seg">
+    <button type="button" id="mSingle" class="on">Single span</button>
+    <button type="button" id="mMulti">Multi-span pull</button>
+  </div>
+
+  <label class="field" id="fieldWT"><span class="lbl">Wire / Rope</span>
+    <select id="wtype">
+      <option value="38">3/8&quot; steel hardline · 0.26 lb/ft</option>
+      <option value="12">1/2&quot; steel hardline · 0.46 lb/ft</option>
+      <option value="c">Custom weight</option>
+    </select></label>
+  <label class="field"><span class="lbl">Wire Weight (lb/ft)</span>
+    <input id="w" type="text" inputmode="decimal" placeholder="0.0" autocomplete="off">
+    <span class="hint" id="wHint">Hardline weights are averages for 6×19 / 6×26 IWRC steel rope. Check your rope's spec and edit if needed.</span></label>
+  <label class="field" id="fieldL"><span class="lbl">Span Length (ft)</span>
+    <input id="L" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+  <label class="field" id="fieldT"><span class="lbl" id="Tlbl">Weight on Hook (lbs)</span>
+    <input id="T" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
+    <span class="hint" id="Thint"></span></label>
+
+  <section id="heli" class="box">
+    <h2>Helicopter</h2>
+    <div id="longBox" class="hide">
+      <label class="field"><span class="lbl">Weight on long line (lbs)</span>
+        <input id="endWt" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+      <label class="field"><span class="lbl">Helicopter pull (lbs)</span>
+        <select id="pullSel"><option value="250">250 lbs</option><option value="500">500 lbs</option><option value="750">750 lbs</option><option value="1000" selected>1,000 lbs</option><option value="1250">1,250 lbs</option><option value="1500">1,500 lbs</option><option value="1750">1,750 lbs</option><option value="2000">2,000 lbs</option><option value="2250">2,250 lbs</option><option value="2500">2,500 lbs</option><option value="c">Custom</option></select>
+        <span class="hint">Pull stopped on the brake. This is how hard the helicopter is pulling against it.</span></label>
+      <label class="field hide" id="pullBox"><span class="lbl">Pull (lbs)</span>
+        <input id="pullIn" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+      <label class="field"><span class="lbl">Long line length (ft)</span>
+        <input id="llLen" type="text" inputmode="decimal" placeholder="100" autocomplete="off"></label>
+    </div>
+    <div id="hsBox" class="hide">
+      <label class="field"><span class="lbl">Wire wrap diameter on reel</span>
+        <select id="dSel"><option value="24">24 in (2 ft) · max 2,600 lbs</option><option value="30">30 in (2.5 ft) · max 2,080 lbs</option><option value="36">36 in (3 ft) · max 1,733 lbs</option><option value="42">42 in (3.5 ft) · max 1,486 lbs</option><option value="48" selected>48 in (4 ft) · max 1,300 lbs</option><option value="54">54 in (4.5 ft) · max 1,156 lbs</option><option value="60">60 in (5 ft) · max 1,040 lbs</option><option value="66">66 in (5.5 ft) · max 945 lbs</option><option value="72">72 in (6 ft) · max 867 lbs</option><option value="c">Custom diameter</option><option value="t">Custom brake tension</option></select>
+        <span class="hint">Diameter of the wire wrapped on the spool right now. It shrinks as the reel empties, so brake capacity goes up.</span></label>
+      <label class="field hide" id="dBox"><span class="lbl">Wrap diameter (in)</span>
+        <input id="dIn" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+      <label class="field hide" id="hsTBox"><span class="lbl">Brake tension (lbs)</span>
+        <input id="hsT" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+      <p class="note" id="capNote" style="margin:-4px 0 14px;color:#fff;font-weight:700;text-align:center"></p>
+      <label class="field"><span class="lbl">Helistringer + reel + wire (lbs)</span>
+        <input id="hsWt" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
+        <span class="hint">Total weight hanging on the hook before the pull.</span></label>
+      <label class="field"><span class="lbl">Long line length (ft)</span>
+        <input id="hsLL" type="text" inputmode="decimal" placeholder="100" autocomplete="off">
+        <span class="hint">Long line assumed to weigh 100 lbs.</span></label>
+      <div class="glbl" style="margin-top:4px">REEL AT END OF PULL (OPTIONAL)</div>
+      <div class="row2">
+        <label class="field"><span class="lbl">Wire dia. (in)</span>
+          <input id="wd" type="text" inputmode="decimal" placeholder="0.000" autocomplete="off"></label>
+        <label class="field"><span class="lbl">Reel width (in)</span>
+          <input id="rw" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+      </div>
+      <span class="hint" style="margin:-8px 0 12px">Reel width = inside, flange to flange. Uses the starting wrap diameter above and the wire paid out into the pull.</span>
+    </div>
+    <p class="note" id="heliNote"></p>
+  </section>
+
+  <details id="heights">
+    <summary>Support heights (optional)</summary>
+    <div class="hwrap">
+      <div class="row2">
+        <label class="field"><span class="lbl" id="lblA">Structure A (ft)</span>
+          <input id="hA" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+        <label class="field"><span class="lbl" id="lblB">Structure B (ft)</span>
+          <input id="hB" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+      </div>
+      <p class="note" id="hNote">Measure both from the same reference: height above ground on flat terrain, or elevation on a hillside. Leave closed or blank for a level pull.</p>
+    </div>
+  </details>
+
+  <section id="multi" class="hide">
+    <div class="mhead"><span>Attachment height (ft)</span><span>Span length (ft)</span></div>
+    <div id="mlist"></div>
+    <div class="mbtns">
+      <button type="button" id="addS">+ Add structure</button>
+      <button type="button" id="remS" class="sec">− Remove</button>
+    </div>
+    <p class="note" style="margin:-6px 0 16px" id="mNote"></p>
+  </section>
+
+  <section class="result">
+    <div class="k" id="resK">SAG</div>
+    <div class="v"><span id="sag">—</span> <span class="u">ft</span></div>
+    <div class="s" id="sagNote">Enter weight, span and tension</div>
+  </section>
+
+  <section class="result heli hide" id="hres">
+    <div class="k" id="hK">LOAD ON KIT</div>
+    <div class="v"><span id="hV">—</span> <span class="u">lbs</span></div>
+    <div class="s" id="hS"></div>
+  </section>
+
+  <div id="warn" class="warn hide"></div>
+
+  <svg id="dia" viewBox="0 0 340 180" aria-label="Sag diagram"></svg>
+
+  <dl class="stats" id="stats"></dl>
+
+  <p class="formula">Sag = (W × L²) ÷ (8 × T)  ·  T = horizontal tension</p>
+  <button class="clear" id="clear" type="button">Clear</button>
+
+  <p class="disc">Wire in span is the wire hanging between attachments only. Add wire for tie-offs, dead-ends, sagging and reserve on the reel.<br><br>Estimate only. Uses the parabolic sag approximation with wire weight spread along the slope, the same horizontal tension in every span (frictionless blocks), a straight long line, and no wind, ice, rotor wash or aircraft motion. Accuracy drops on very steep or very deep spans. Load limits must come from the aircraft flight manual supplement for the equipment installed. Use with your own judgment, the equipment manufacturer's limits and the job's stringing plan. The pilot in command is responsible for the safety of the operation.</p>
+  <p class="brand">Provided free by <a href="https://rubiconaerospace.com" target="_blank" rel="noopener">Rubicon Aerospace</a></p>
+</main>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var KEY = "rubicon-sag-v3";
+  var WT = { "38": "0.26", "12": "0.46" };
+  var WD = { "38": "0.375", "12": "0.5" };
+  var HS_TORQUE = 2600; // Helistringer brake capacity, ft-lb
+  var FIELDS = ["w", "L", "T", "hA", "hB", "llLen", "endWt", "pullIn", "hsWt", "dIn", "hsT", "wd", "rw", "hsLL"];
+  var mode = "single", method = "side";
+  var H = ["", "", ""], P = ["", ""];
+
+  function pv(s) { s = String(s == null ? "" : s).replace(/,/g, "").trim(); if (s === "") return NaN; var v = parseFloat(s); return isFinite(v) ? v : NaN; }
+  function num(id) { return pv($(id).value); }
+  function num0(id) { var v = num(id); return isFinite(v) ? v : 0; }
+  function f(x, d) { if (d === undefined) d = 1; return x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function vl(v) { return v >= 0 ? f(v, 0) + " lbs down" : f(-v, 0) + " lbs uplift"; }
+  function deg(r) { return f(r * 180 / Math.PI, 0) + "°"; }
+  var heli = function () { return method !== "sag"; };
+
+  function save() {
+    try {
+      var o = { mode: mode, method: method, open: $("heights").open, H: H, P: P, wtype: $("wtype").value, dSel: $("dSel").value, pullSel: $("pullSel").value };
+      FIELDS.forEach(function (i) { o[i] = $(i).value; });
+      localStorage.setItem(KEY, JSON.stringify(o));
+    } catch (e) {}
+  }
+  function load() {
+    try {
+      var o = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (!o) { $("w").value = WT["38"]; $("llLen").value = "100"; return; }
+      FIELDS.forEach(function (i) { if (o[i] != null) $(i).value = o[i]; });
+      if (o.open) $("heights").open = true;
+      if (o.H && o.H.length >= 2 && o.P && o.P.length === o.H.length - 1) { H = o.H; P = o.P; }
+      if (o.mode === "multi") mode = "multi";
+      if (o.method) method = o.method;
+      if (o.wtype) $("wtype").value = o.wtype;
+      if (o.dSel) $("dSel").value = o.dSel;
+      if (o.pullSel) $("pullSel").value = o.pullSel;
+    } catch (e) { $("w").value = WT["38"]; $("llLen").value = "100"; }
+  }
+
+  // One span. Parabolic, wire weight spread along the chord: q = w / cos(theta) per horizontal ft.
+  function solveSpan(w, T, L, ha, hb) {
+    var dh = hb - ha, slope = Math.abs(dh) / L, cos = Math.cos(Math.atan(slope)), q = w / cos;
+    var D = q * L * L / (8 * T), Dstd = w * L * L / (8 * T);
+    var x0 = L / 2 - T * dh / (q * L);
+    var y = function (x) { return ha + dh * x / L - q / (2 * T) * x * (L - x); };
+    var xl = Math.min(Math.max(x0, 0), L), yl = y(xl);
+    var S = 0, n = 200, px = 0, py = ha;
+    for (var i = 1; i <= n; i++) { var x = L * i / n, yy = y(x); S += Math.hypot(x - px, yy - py); px = x; py = yy; }
+    var VL = q * x0, VR = q * (L - x0);
+    return { L: L, ha: ha, hb: hb, dh: dh, slope: slope, q: q, D: D, Dstd: Dstd, x0: x0, xl: xl, yl: yl,
+      inside: x0 > 0 && x0 < L, S: S, VL: VL, VR: VR, TL: Math.hypot(T, VL), TR: Math.hypot(T, VR), y: y };
+  }
+
+  // Find horizontal tension from a reading taken at the helicopter end of the last span.
+  // reading = sqrt(H^2 + (VR(H) + add)^2), VR(H) = qL/2 + H*dh/L
+  function solveH(M, w, L, dh, add) {
+    var q = w / Math.cos(Math.atan(Math.abs(dh) / L));
+    var m = function (h) { return Math.hypot(h, q * L / 2 + h * dh / L + add); };
+    if (m(0) >= M) return NaN;
+    var lo = 0, hi = M;
+    for (var i = 0; i < 80; i++) { var mid = (lo + hi) / 2; if (m(mid) < M) lo = mid; else hi = mid; }
+    return lo;
+  }
+
+  function stat(rows) {
+    $("stats").innerHTML = rows.map(function (r) {
+      if (r.length === 1) return '<div class="h">' + r[0] + "</div>";
+      return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";
+    }).join("");
+  }
+  function warnings(msgs) {
+    var w = $("warn");
+    if (msgs.length) { w.innerHTML = msgs.join("<br><br>"); w.classList.remove("hide"); } else w.classList.add("hide");
+  }
+
+  function draw(spans, opts) {
+    var svg = $("dia"), W = 340, Hh = 180, mx = 26, mt = 24, mb = 26;
+    if (!spans || !spans.length) { svg.innerHTML = '<text x="170" y="95" fill="#555" font-size="13" text-anchor="middle">Diagram appears here</text>'; return; }
+    var tot = 0, off = [];
+    spans.forEach(function (s) { off.push(tot); tot += s.L; });
+    var hi = -Infinity, lo = Infinity;
+    spans.forEach(function (s) { hi = Math.max(hi, s.ha, s.hb); lo = Math.min(lo, s.yl, s.ha, s.hb); });
+    var rng = (hi - lo) || 1; lo -= rng * 0.12; rng = hi - lo;
+    var X = function (x) { return mx + x / tot * (W - 2 * mx); };
+    var Y = function (v) { return mt + (hi - v) / rng * (Hh - mt - mb); };
+    var base = Hh - mb, g = "", N = spans.length + 1;
+    g += '<line x1="8" y1="' + base + '" x2="' + (W - 8) + '" y2="' + base + '" stroke="#333" stroke-width="2"/>';
+    var tops = [spans[0].ha].concat(spans.map(function (s) { return s.hb; }));
+    var xs = off.concat([tot]);
+    for (var j = 0; j < N; j++) {
+      var isHeli = opts.heliEnd && j === N - 1;
+      var col = opts.uplift && opts.uplift[j] ? "#ff5a3d" : "#8a8f94";
+      if (isHeli) {
+        g += '<circle cx="' + X(xs[j]) + '" cy="' + Y(tops[j]) + '" r="6" fill="#fff"/>';
+      } else {
+        g += '<line x1="' + X(xs[j]) + '" y1="' + base + '" x2="' + X(xs[j]) + '" y2="' + Y(tops[j]) + '" stroke="' + col + '" stroke-width="' + (N > 12 ? 3 : 5) + '"/>';
+      }
+      var show = isHeli || N <= 12 || j === 0 || (j + 1) % 5 === 0;
+      if (show) g += '<text x="' + X(xs[j]) + '" y="' + (Y(tops[j]) - 9) + '" fill="' + (isHeli ? "#fff" : "#FFC20E") + '" font-size="' + (N > 12 ? 10 : 12) + '" font-weight="800" text-anchor="middle">' + opts.labels[j] + '</text>';
+    }
+    spans.forEach(function (s, i) {
+      var pts = [];
+      for (var k = 0; k <= 40; k++) { var x = s.L * k / 40; pts.push(X(off[i] + x).toFixed(1) + "," + Y(s.y(x)).toFixed(1)); }
+      g += '<polyline points="' + pts.join(" ") + '" fill="none" stroke="#FFC20E" stroke-width="' + (N > 12 ? 2 : 3) + '"/>';
+    });
+    if (opts.sagIdx != null) {
+      var s = spans[opts.sagIdx], xm = off[opts.sagIdx] + s.L / 2, cm = (s.ha + s.hb) / 2, ym = s.y(s.L / 2);
+      g += '<line x1="' + X(xm) + '" y1="' + Y(cm) + '" x2="' + X(xm) + '" y2="' + Y(ym) + '" stroke="#fff" stroke-dasharray="3 2" stroke-width="1.5"/>';
+      var right = X(xm) < W - 90;
+      g += '<text x="' + (X(xm) + (right ? 6 : -6)) + '" y="' + ((Y(cm) + Y(ym)) / 2 + 4) + '" fill="#fff" font-size="12" font-weight="700" text-anchor="' + (right ? "start" : "end") + '">' + f(s.D) + ' ft</text>';
+    }
+    if (opts.low) g += '<circle cx="' + X(off[opts.low.i] + opts.low.x) + '" cy="' + Y(opts.low.y) + '" r="4.5" fill="#ff8a3d"/>';
+    g += '<text x="' + (W / 2) + '" y="' + (Hh - 7) + '" fill="#6b737a" font-size="11" text-anchor="middle">' + f(tot, 0) + ' ft total · not to scale</text>';
+    svg.innerHTML = g;
+  }
+
+  function blank(msg) {
+    $("sag").textContent = "—"; $("sagNote").textContent = msg;
+    $("hV").textContent = "—"; $("hS").textContent = ""; $("hres").className = "result heli" + (heli() ? "" : " hide");
+    warnings([]); stat([]); draw(); save();
+  }
+
+  function calc() {
+    var w = num("w"), M = num("T"), single = mode === "single";
+    var lens, hts, uneven = false;
+    if (single) {
+      lens = [num("L")];
+      var hA = num("hA"), hB = num("hB");
+      uneven = $("heights").open && isFinite(hA) && isFinite(hB) && hA !== hB;
+      hts = uneven ? [hA, hB] : [0, 0];
+    } else {
+      lens = P.map(pv);
+      hts = H.map(function (h) { var v = pv(h); return isFinite(v) ? v : 0; });
+      uneven = true;
+    }
+    var cap = NaN, capD = NaN, usingMax = false;
+    if (method === "hs") {
+      var dv = $("dSel").value;
+      if (dv === "t") { M = num("hsT"); $("capNote").textContent = ""; }
+      else {
+        capD = dv === "c" ? num("dIn") : +dv;
+        if (capD > 0) cap = HS_TORQUE * 24 / capD;
+        M = cap; usingMax = cap > 0;
+        $("capNote").textContent = cap > 0 ? "Brake tension: " + f(cap, 0) + " lbs (2,600 ft-lb ÷ " + f(capD / 24, 2) + " ft radius)" : "";
+      }
+    }
+    if (method === "long") M = $("pullSel").value === "c" ? num("pullIn") : +$("pullSel").value;
+    if (!(w > 0 && M > 0)) return blank(method === "hs" ? "Enter wire weight and wrap diameter or brake tension" : "Enter wire weight and tension");
+    if (!lens.every(function (l) { return l > 0; })) return blank(single ? "Enter span length" : "Enter every span length");
+
+    var n = lens.length, ex = {
+      LL: num("llLen") > 0 ? num("llLen") : 100, hsLL: num("hsLL") > 0 ? num("hsLL") : 100, Wline: 100, Wend: num0("endWt"),
+      Wunit: num0("hsWt"), wd: num("wd"), rw: num("rw"), lens: lens, hts: hts, cap: cap, capD: capD, usingMax: usingMax, M: M
+    };
+    var T = M;
+    if (method === "long") {
+      T = M;
+    } else if (heli()) {
+      T = solveH(M, w, lens[n - 1], hts[n] - hts[n - 1], 0);
+      if (!isFinite(T)) return blank("Tension is less than the wire weight at the helicopter. Check the inputs.");
+    }
+    var spans = [];
+    for (var i = 0; i < n; i++) spans.push(solveSpan(w, T, lens[i], hts[i], hts[i + 1]));
+
+    var rows = [], msgs = [], drawOpts;
+    if (heli()) heliOut(spans, T, w, ex, hts[n], uneven, rows, msgs);
+    else $("hres").classList.add("hide");
+    if (single) drawOpts = singleOut(spans[0], w, T, uneven, rows, msgs);
+    else drawOpts = multiOut(spans, w, T, rows, msgs);
+    stat(rows); warnings(msgs);
+    draw(drawOpts.spans || spans, drawOpts);
+    save();
+  }
+
+  var SIDE_LIM = 1400; // MD 500 / Bell 407 with Aerocraft side pull kit, on the hook
+  function heliOut(spans, T, w, ex, hPull, uneven, rows, msgs) {
+    var s = spans[spans.length - 1], VR = s.VR, load, vert, k;
+    rows.push(["HELICOPTER"]);
+    if (method === "side") {
+      k = "LOAD ON SIDE PULL KIT"; load = s.TR; vert = VR;
+      rows.push(["Wire angle at kit", VR >= 0 ? deg(Math.atan2(VR, T)) + " below horizontal" : deg(Math.atan2(-VR, T)) + " above horizontal"]);
+    } else if (method === "long") {
+      k = "HOOK LOAD"; vert = VR + ex.Wend + ex.Wline; load = Math.hypot(T, vert);
+      var below = VR + ex.Wend + ex.Wline / 2;
+      rows.push(["Wire tension", f(s.TR, 0) + " lbs"]);
+      if (below > 0) {
+        var ang = Math.atan2(T, below), drop = ex.LL * Math.cos(ang);
+        rows.push(["Long line angle", deg(ang) + " from vertical"]);
+        rows.push(["Weight hangs below helicopter", f(drop, 0) + " ft"]);
+        rows.push(["Weight trails behind helicopter", f(ex.LL * Math.sin(ang), 0) + " ft"]);
+        if (uneven) rows.push(["Helicopter height", f(hPull + drop, 0) + " ft"]);
+        if (ang > 45 * Math.PI / 180) msgs.push("Long line is " + deg(ang) + " from vertical. The weight is trailing well back and riding up toward the helicopter. More weight brings it down.");
+      } else {
+        msgs.push("<b>The weight is too light.</b> The rope will lift the weight to or above horizontal, toward the rotor. Add weight or pull less.");
+      }
+    } else {
+      k = "HOOK LOAD";
+      var nS = ex.lens.length, totW = 0; spans.forEach(function (sp) { totW += w * sp.S; });
+      // start of pull: reel full, first span strung, brake at starting wrap
+      var H0 = solveH(ex.M, w, ex.lens[0], ex.hts[1] - ex.hts[0], 0);
+      var s0 = solveSpan(w, H0, ex.lens[0], ex.hts[0], ex.hts[1]);
+      var v0 = ex.Wunit + s0.VR + 100, L0 = Math.hypot(H0, v0);
+      // end of pull: all wire paid out, brake at ending wrap if known
+      var Tend = ex.M, D1 = NaN, empty = false;
+      if (ex.capD > 0 && ex.wd > 0 && ex.rw > 0) {
+        var ft = totW / w, d2 = ex.capD * ex.capD - 4 * ft * 12 * ex.wd * ex.wd / (Math.PI * ex.rw);
+        if (d2 > 0) { D1 = Math.sqrt(d2); if (ex.usingMax) Tend = HS_TORQUE * 24 / D1; }
+        else { empty = true; msgs.push("<b>Not enough wire on the reel.</b> At this wrap diameter, wire size and reel width, the reel runs out before the pull is done."); }
+      }
+      var H1 = solveH(Tend, w, ex.lens[nS - 1], ex.hts[nS] - ex.hts[nS - 1], 0);
+      if (!isFinite(H1)) H1 = T;
+      var s1 = solveSpan(w, H1, ex.lens[nS - 1], ex.hts[nS - 1], ex.hts[nS]);
+      var unit1 = ex.Wunit - totW;
+      if (unit1 < 0) msgs.push("<b>More wire is in the air than the reel weight entered.</b> Check the Helistringer + reel + wire weight.");
+      var v1 = unit1 + s1.VR + 100, L1 = Math.hypot(H1, v1);
+      load = Math.max(L0, L1); VR = s1.VR;
+      var geo = function (H, vBelow) {
+        var a = Math.atan2(H, Math.max(vBelow - 50, 0.001));
+        rows.push(["Long line angle", deg(a) + " from vertical"]);
+        rows.push(["Helistringer below helicopter", f(ex.hsLL * Math.cos(a), 0) + " ft"]);
+        rows.push(["Trailing behind helicopter", f(ex.hsLL * Math.sin(a), 0) + " ft"]);
+        return a;
+      };
+      rows.push(["START OF PULL · REEL FULL"]);
+      rows.push(["Hook load", f(L0, 0) + " lbs"]);
+      rows.push(["Wire tension", f(s0.TR, 0) + " lbs"]);
+      geo(H0, v0);
+      rows.push(["END OF PULL · ALL WIRE OUT"]);
+      rows.push(["Hook load", f(L1, 0) + " lbs"]);
+      rows.push(["Wire tension", f(s1.TR, 0) + " lbs"]);
+      rows.push(["Wire paid out", f(totW, 0) + " lbs"]);
+      if (isFinite(D1)) rows.push(["Wrap diameter", f(D1, 1) + " in"]);
+      if (empty) rows.push(["Wrap diameter", "Reel empty"]);
+      var a1 = geo(H1, v1);
+      if (isFinite(D1) && ex.usingMax) {
+        var Dend = 0;
+        for (var z = 0; z < nS; z++) Dend = Math.max(Dend, solveSpan(w, H1, ex.lens[z], ex.hts[z], ex.hts[z + 1]).D);
+        rows.push([(nS > 1 ? "Biggest sag" : "Sag") + ", full brake", f(Dend) + " ft"]);
+      }
+      if (a1 > 45 * Math.PI / 180) msgs.push("At the end of the pull the long line is " + deg(a1) + " from vertical. The lighter reel trails well back toward the helicopter.");
+      $("hS").dataset.hs = "Start of pull " + f(L0, 0) + " · end " + f(L1, 0) + " lbs";
+    }
+    if (method === "side") rows.push(["Horizontal pull", f(T, 0) + " lbs"]);
+    if (VR < 0) msgs.push("<b>Wire rises toward the helicopter.</b> It climbs to the last structure and pulls up at the helicopter end, toward the rotor. Add tension, gain height or pull from low to high.");
+
+    var box = $("hres");
+    $("hK").textContent = k; $("hV").textContent = f(load, 0);
+    box.className = "result heli";
+    if (method === "side") {
+      var pct = load / SIDE_LIM * 100;
+      $("hS").textContent = f(pct, 0) + "% of 1,400 lb hook limit" + (load > SIDE_LIM ? " · OVER by " + f(load - SIDE_LIM, 0) + " lbs" : "");
+      if (load > SIDE_LIM) { box.classList.add("over"); msgs.unshift("<b>Over the 1,400 lb side pull limit by " + f(load - SIDE_LIM, 0) + " lbs.</b>"); }
+      else if (pct >= 90) box.classList.add("near");
+    } else {
+      $("hS").textContent = method === "long" ? "Weight + 100 lb long line + wire, plus the pull" : $("hS").dataset.hs;
+    }
+  }
+
+  function singleOut(s, w, T, uneven, rows, msgs) {
+    var L = s.L, A = "A", B = "B";
+    $("resK").textContent = "SAG";
+    $("sag").textContent = f(s.D);
+    $("sagNote").textContent = uneven ? "At midspan, below a straight line between attachments" : "At midspan, level pull";
+    rows.push(["SPAN"]);
+    rows.push(["Wire in span", f(s.S, 0) + " ft"]);
+    rows.push(["Extra over span length", f(s.S - L, 0) + " ft"]);
+    if (method !== "hs") rows.push(["Weight of wire in span", f(w * s.S, 0) + " lbs"]);
+    if (uneven) {
+      var lower = Math.min(s.ha, s.hb);
+      rows.push(["Low point from " + A, s.inside ? f(s.x0, 0) + " ft" : (s.x0 <= 0 ? "At " + A : "At " + B)]);
+      rows.push(["Low point height", f(s.yl) + " ft"]);
+      rows.push(["Below lower attachment", f(lower - s.yl) + " ft"]);
+      rows.push(["Vertical load at " + A, vl(s.VL)]);
+      if (!heli()) rows.push(["Vertical load at " + B, vl(s.VR)]);
+      rows.push(["Line tension at " + A, f(s.TL, 0) + " lbs"]);
+      if (!heli()) rows.push(["Line tension at " + B, f(s.TR, 0) + " lbs"]);
+      rows.push(["Span slope", f(s.slope * 100) + "%"]);
+      if (s.slope > 0.15) msgs.push("Steep span (" + f(s.slope * 100, 0) + "% slope). Results are corrected for slope but are approximate this steep. Treat them as rough.");
+      if (!s.inside) msgs.push("No low point in the span. The wire climbs the whole way from the lower end and pulls <b>up</b> there. Add tension or check the setup.");
+    } else if (!heli()) {
+      rows.push(["Vertical load (each end)", vl(s.VL)]);
+      rows.push(["Line tension (each end)", f(s.TL, 0) + " lbs"]);
+    }
+    if (!uneven && s.D / L > 0.1) {
+      var cat = T / w * (Math.cosh(w * L / (2 * T)) - 1);
+      msgs.push("Sag is over 10% of the span. The standard formula reads a little low here. Catenary sag: " + f(cat) + " ft.");
+    }
+    var ds = uneven ? s : solveSpan(w, T, L, s.D * 1.6, s.D * 1.6);
+    return { spans: [ds], labels: ["A", "B"], sagIdx: 0, low: uneven ? { i: 0, x: s.xl, y: s.yl } : null };
+  }
+
+  function multiOut(spans, w, T, rows, msgs) {
+    var N = spans.length + 1, big = 0, low = 0, maxT = { v: 0, at: 0 }, totL = 0, totS = 0;
+    var name = function (j) { return "structure " + (j + 1); };
+    var tag = function (j) { return String(j + 1); };
+    spans.forEach(function (s, i) {
+      if (s.D > spans[big].D) big = i;
+      if (s.yl < spans[low].yl) low = i;
+      totL += s.L; totS += s.S;
+      if (s.TL > maxT.v) maxT = { v: s.TL, at: i };
+      if (s.TR > maxT.v) maxT = { v: s.TR, at: i + 1 };
+    });
+    var V = [];
+    for (var j = 0; j < N; j++) V.push((j > 0 ? spans[j - 1].VR : 0) + (j < N - 1 ? spans[j].VL : 0));
+    var upl = {}, uplList = [];
+    V.forEach(function (v, j) { if (v < 0) { upl[j] = true; uplList.push(j); } });
+
+    var b = spans[big], lw = spans[low];
+    $("resK").textContent = "BIGGEST SAG";
+    $("sag").textContent = f(b.D);
+    $("sagNote").textContent = "Span " + tag(big) + "–" + tag(big + 1) + " · midspan, below a straight line between attachments";
+    var lowWhere = lw.xl <= 0 ? "At " + name(low) : lw.xl >= lw.L ? "At " + name(low + 1)
+      : "Span " + tag(low) + "–" + tag(low + 1) + ", " + f(lw.xl, 0) + " ft from " + name(low);
+
+    rows.push(["PULL"]);
+    rows.push(["Lowest wire point", f(lw.yl) + " ft"]);
+    rows.push(["Located", lowWhere]);
+    rows.push(["Total pull length", f(totL, 0) + " ft"]);
+    rows.push(["Total wire in pull", f(totS, 0) + " ft"]);
+    rows.push(["Extra over pull length", f(totS - totL, 0) + " ft"]);
+    if (method !== "hs") rows.push(["Weight of wire in pull", f(w * totS, 0) + " lbs"]);
+    rows.push(["Highest line tension", f(maxT.v, 0) + " lbs at " + name(maxT.at)]);
+    rows.push(["SPANS"]);
+    spans.forEach(function (s, i) { rows.push([tag(i) + "–" + tag(i + 1) + " · " + f(s.L, 0) + " ft", "sag " + f(s.D) + " · wire " + f(s.S, 0)]); });
+
+    var mid = uplList.filter(function (k) { return k > 0 && k < N - 1; }).map(function (k) { return k + 1; });
+    if (mid.length) msgs.push("<b>Uplift at structure " + mid.join(", ") + ".</b> The wire will try to lift out of the block. Add tension, hold it down, or check the setup.");
+    if (upl[0]) msgs.push("<b>Uplift at structure 1.</b> The wire climbs away from this end and pulls up on it.");
+    if (!heli() && upl[N - 1]) msgs.push("<b>Uplift at structure " + N + ".</b> The wire climbs away from this end and pulls up on it.");
+    var steep = []; spans.forEach(function (s, i) { if (s.slope > 0.15) steep.push(tag(i) + "–" + tag(i + 1)); });
+    if (steep.length) msgs.push("Steep span " + steep.join(", ") + " (over 15% slope). Results are corrected for slope but are approximate. Treat them as rough.");
+    var deep = []; spans.forEach(function (s, i) { if (s.D / s.L > 0.1) deep.push(tag(i) + "–" + tag(i + 1)); });
+    if (deep.length) msgs.push("Sag over 10% of span in " + deep.join(", ") + ". The parabolic formula reads a little low there.");
+
+    var labels = []; for (var k = 0; k < N; k++) labels.push(tag(k));
+    return { labels: labels, sagIdx: big, low: { i: low, x: lw.xl, y: lw.yl }, uplift: upl };
+  }
+
+  // ---- multi-span list ----
+  function inp(cls, idx, val, ph) {
+    return '<input type="text" inputmode="decimal" autocomplete="off" class="' + cls + '" data-i="' + idx + '" value="' + String(val).replace(/"/g, "") + '" placeholder="' + ph + '">';
+  }
+  function renderList() {
+    var h = "", N = H.length;
+    for (var i = 0; i < N; i++) {
+      h += '<div class="srow"><span class="tag">Structure ' + (i + 1) + "</span>" + inp("ih", i, H[i], "Height") + "</div>";
+      if (i < N - 1) h += '<div class="prow"><span class="tag">Span ' + (i + 1) + "–" + (i + 2) + "</span>" + inp("ip", i, P[i], "Length") + "</div>";
+    }
+    $("mlist").innerHTML = h;
+    $("remS").disabled = N <= 2;
+    $("remS").style.opacity = N <= 2 ? 0.4 : 1;
+  }
+  $("mlist").addEventListener("input", function (e) {
+    var t = e.target, i = +t.getAttribute("data-i");
+    if (t.classList.contains("ih")) H[i] = t.value; else if (t.classList.contains("ip")) P[i] = t.value;
+    calc();
+  });
+  $("addS").addEventListener("click", function () {
+    var N = H.length, focusIdx;
+    H.push(""); P.push(""); focusIdx = N;
+    renderList(); calc();
+    var el = $("mlist").querySelector('input.ih[data-i="' + focusIdx + '"]'); if (el) el.focus();
+  });
+  $("remS").addEventListener("click", function () {
+    var N = H.length; if (N <= 2) return;
+    H.pop(); P.pop();
+    renderList(); calc();
+  });
+
+  // ---- modes ----
+  var TL = {
+    side: ["Weight on Hook (lbs)", "Load cell reading on the side pull hook. Brake unit on the ground at the far end."],
+    long: ["Brake Tension (lbs)", "Tension set by the brake unit on the ground at the far end."],
+    hs: ["Brake Tension (lbs)", ""],
+    sag: ["Horizontal Tension (lbs)", "Horizontal part of the wire tension."]
+  };
+  function applyMethod() {
+    document.querySelectorAll("#methods button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-m") === method); });
+    $("Tlbl").textContent = TL[method][0]; $("Thint").textContent = TL[method][1];
+    $("heli").classList.toggle("hide", !heli());
+    $("longBox").classList.toggle("hide", method !== "long");
+    $("hsBox").classList.toggle("hide", method !== "hs");
+    $("fieldT").classList.toggle("hide", method === "hs" || method === "long");
+    $("fieldWT").classList.toggle("hide", method === "hs");
+    $("wHint").classList.toggle("hide", method === "hs");
+    $("hNote").textContent = (heli() ? "Structure A is the " + (method === "hs" ? "tie-off" : "brake") + " end. Structure B is the helicopter end. " : "") + "Measure both from the same reference: height above ground on flat terrain, or elevation on a hillside. Leave closed or blank for a level pull.";
+    $("mNote").textContent = (heli() ? "Structure 1 is the " + (method === "hs" ? "tie-off end, where the wire is dead-ended" : "brake end") + ". The last structure is the helicopter end; helicopter loads are figured from the wire's pull there. " : "") +
+      "Heights from the same reference. Blank height = 0. Horizontal tension is taken as the same in every span." +
+      (heli() ? " Block friction lowers tension in spans farther from the helicopter, so their sag will be somewhat more than shown." : "");
+    $("heliNote").textContent = method === "side" ? "Hook limit 1,400 lbs: MD 500 and Bell 407 with the Aerocraft side pull kit." :
+      method === "long" ? "Brake is set to stop the pull. Long line assumed to weigh 100 lbs." : "";
+    renderList();
+  }
+  function setMethod(m) {
+    var prev = method; method = m;
+    if ((prev === "sag") !== (m === "sag") && mode === "multi") { /* list labels change; values stay */ }
+    applyMethod(); calc();
+  }
+  function setMode(m) {
+    mode = m;
+    $("mSingle").classList.toggle("on", m === "single");
+    $("mMulti").classList.toggle("on", m === "multi");
+    $("fieldL").classList.toggle("hide", m === "multi");
+    $("heights").classList.toggle("hide", m === "multi");
+    $("multi").classList.toggle("hide", m !== "multi");
+    calc();
+  }
+  document.querySelectorAll("#methods button").forEach(function (b) { b.addEventListener("click", function () { setMethod(b.getAttribute("data-m")); }); });
+  $("mSingle").addEventListener("click", function () { setMode("single"); });
+  $("mMulti").addEventListener("click", function () { setMode("multi"); });
+  $("wtype").addEventListener("change", function () { var v = $("wtype").value; if (WT[v]) { $("w").value = WT[v]; $("wd").value = WD[v]; } calc(); if (v === "c") $("w").focus(); });
+  $("w").addEventListener("input", function () { var v = $("w").value.trim(); $("wtype").value = v === WT["38"] ? "38" : v === WT["12"] ? "12" : "c"; });
+  function applyPull() { $("pullBox").classList.toggle("hide", $("pullSel").value !== "c"); }
+  $("pullSel").addEventListener("change", function () { applyPull(); calc(); });
+  function applyD() { $("dBox").classList.toggle("hide", $("dSel").value !== "c"); $("hsTBox").classList.toggle("hide", $("dSel").value !== "t"); }
+  $("dSel").addEventListener("change", function () { applyD(); calc(); });
+
+  load();
+  applyMethod(); applyD(); applyPull();
+  FIELDS.forEach(function (i) { $(i).addEventListener("input", calc); });
+  $("heights").addEventListener("toggle", calc);
+  $("clear").addEventListener("click", function () {
+    FIELDS.forEach(function (i) { $(i).value = ""; });
+    $("wtype").value = "38"; $("w").value = WT["38"]; $("llLen").value = "100";
+    $("heights").open = false; H = ["", "", ""]; P = ["", ""]; renderList(); calc();
+  });
+  setMode(mode);
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+}
+</script>
+</body>
+</html>
