@@ -1,31 +1,14 @@
 {
-  "name": "TRex Calc | Rubicon Aerospace",
+  "name": "TRex Calc",
   "short_name": "TRex Calc",
-  "description": "TensionRex - free wire sag and helicopter load calculator for wire pulls. Works offline.",
+  "description": "TensionRex wire sag and tension planner by Rubicon Aerospace",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#F4692E",
-  "theme_color": "#F4692E",
+  "theme_color": "#0B1F63",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
