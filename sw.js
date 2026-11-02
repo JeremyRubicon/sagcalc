@@ -1,5 +1,5 @@
-// Wire Sag Calculator - offline cache. Bump VERSION when files change.
-var VERSION = "sagcalc-v1";
+// TRex Calc - offline cache. Bump VERSION when files change.
+var VERSION = "trexcalc-v2";
 var FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
