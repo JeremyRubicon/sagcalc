@@ -1,5 +1,5 @@
 // TRex Calc offline support: network first (always newest when online, skipping the browser's 10-minute cache), cached copy when offline.
-const CACHE = "trex-calc-v1.2.6";
+const CACHE = "trex-calc-v1.3.6";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(FILES.map(f => c.add(new Request(f, { cache: "reload" })).catch(() => {})))).then(() => self.skipWaiting()));
